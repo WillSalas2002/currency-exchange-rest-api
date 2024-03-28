@@ -6,10 +6,7 @@ import com.will.currency.exchange.api.util.ConnectionManager;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +34,11 @@ public class ExchangeRateRepository {
             WHERE c_base_code = ? AND c_target_code = ?;
             """;
 
+    private final static String SAVE_SQL = """
+            INSERT INTO exchange_rate (base_currency_id, target_currency_id, rate)
+            VALUES (?, ?, ?);
+            """;
+
     public List<ExchangeRate> findAll() {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(FIND_ALL_SQL)) {
@@ -62,6 +64,23 @@ public class ExchangeRateRepository {
                 exchangeRate = getExchangeRate(resultSet);
             }
             return Optional.ofNullable(exchangeRate);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ExchangeRate save(ExchangeRate exchangeRate) {
+        try (Connection connection = ConnectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setInt(1, exchangeRate.getBaseCurrency().getId());
+            statement.setInt(2, exchangeRate.getTargetCurrency().getId());
+            statement.setBigDecimal(3, exchangeRate.getRate());
+            statement.executeUpdate();
+            ResultSet keys = statement.getGeneratedKeys();
+            if (keys.next()) {
+                exchangeRate.setId(keys.getInt(1));
+            }
+            return exchangeRate;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
