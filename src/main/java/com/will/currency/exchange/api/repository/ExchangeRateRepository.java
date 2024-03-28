@@ -39,6 +39,12 @@ public class ExchangeRateRepository {
             VALUES (?, ?, ?);
             """;
 
+    private final static String UPDATE_SQL = """
+            UPDATE exchange_rate
+            SET rate = ?
+            WHERE id = ?;
+            """;
+
     public List<ExchangeRate> findAll() {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(FIND_ALL_SQL)) {
@@ -81,6 +87,18 @@ public class ExchangeRateRepository {
                 exchangeRate.setId(keys.getInt(1));
             }
             return exchangeRate;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ExchangeRate update(ExchangeRate updatedExchangeRate) {
+        try (Connection connection = ConnectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setBigDecimal(1, updatedExchangeRate.getRate());
+            statement.setInt(2, updatedExchangeRate.getId());
+            statement.executeUpdate();
+            return updatedExchangeRate;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
