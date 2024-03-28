@@ -1,5 +1,7 @@
 package com.will.currency.exchange.api.util;
 
+import org.sqlite.SQLiteConfig;
+
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -49,7 +51,10 @@ public final class ConnectionManager {
 
     private static Connection open() {
         try {
-            return DriverManager.getConnection(PropertiesUtil.get(URL_KEY));
+            SQLiteConfig config = new SQLiteConfig();
+            config.enforceForeignKeys(true);
+            System.setProperty("org.sqlite foreign_keys", "true");
+            return DriverManager.getConnection(PropertiesUtil.get(URL_KEY), config.toProperties());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
