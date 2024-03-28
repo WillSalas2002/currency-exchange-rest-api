@@ -27,11 +27,34 @@ public class ExchangeService {
             return calculateReverseExchange(tryReverseExchangeRate.get(), amount);
         }
 
-        throw new RuntimeException("NOT FOUND EXCHANGE RATE");
+        return calculateUsdBasedExchange(baseCurrency, targetCurrency, amount);
     }
 
     public Optional<ExchangeRate> findByCurrencyCodes(String baseCurrency, String targetCurrency) {
-        return exchangeRateRepository.findByCurrencyCodes(targetCurrency, baseCurrency);
+        return exchangeRateRepository.findByCurrencyCodes(baseCurrency, targetCurrency);
+    }
+
+    private ExchangeRateDto calculateUsdBasedExchange(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) {
+        String usdCode = "USD";
+
+        Optional<ExchangeRate> currencyOptional1 = findByCurrencyCodes(usdCode, baseCurrencyCode);
+        if (currencyOptional1.isEmpty())
+            throw new RuntimeException("NOT FOUND EXCHANGE RATE");
+
+        Optional<ExchangeRate> currencyOptional2 = findByCurrencyCodes(usdCode, targetCurrencyCode);
+        if (currencyOptional2.isEmpty())
+            throw new RuntimeException("NOT FOUND EXCHANGE RATE");
+
+        BigDecimal usdToBase = currencyOptional1.get().getRate();
+        BigDecimal usdToTarget = currencyOptional2.get().getRate();
+        BigDecimal realRate = usdToTarget.divide(usdToBase, 6, RoundingMode.HALF_EVEN);
+
+        ExchangeRate exchangeRate = new ExchangeRate(0,
+                currencyOptional1.get().getTargetCurrency(),
+                currencyOptional2.get().getTargetCurrency(),
+                realRate);
+
+        return calculateDirectExchange(exchangeRate, amount);
     }
 
     private ExchangeRateDto calculateDirectExchange(ExchangeRate exchangeRate, BigDecimal amount) {
