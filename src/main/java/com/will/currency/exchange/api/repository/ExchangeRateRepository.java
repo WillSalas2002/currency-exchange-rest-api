@@ -128,7 +128,7 @@ public class ExchangeRateRepository {
         return exchangeRate;
     }
 
-    public static ExchangeRateRepository getINSTANCE() {
+    public static ExchangeRateRepository getInstance() {
         return INSTANCE;
     }
 }
