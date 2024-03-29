@@ -29,12 +29,21 @@ public class CurrencyService {
     public List<CurrencyDto> findAll() {
         return currencyRepository.findAll()
                 .stream()
-                .map(currency -> new CurrencyDto(
-                        currency.getId(),
-                        currency.getCode(),
-                        currency.getFullName(),
-                        currency.getSign()))
+                .map(this::mapToCurrencyDto)
                 .collect(Collectors.toList());
+    }
+
+    public CurrencyDto save(CurrencyDto currencyDto) {
+        Currency currency = currencyRepository.save(mapToCurrency(currencyDto));
+        return mapToCurrencyDto(currency);
+    }
+
+    private CurrencyDto mapToCurrencyDto(Currency currency) {
+        return new CurrencyDto(currency.getId(), currency.getCode(), currency.getFullName(), currency.getSign());
+    }
+
+    private Currency mapToCurrency(CurrencyDto currencyDto) {
+        return new Currency(currencyDto.id(), currencyDto.code(), currencyDto.fullName(), currencyDto.sign());
     }
 
     public static CurrencyService getInstance() {

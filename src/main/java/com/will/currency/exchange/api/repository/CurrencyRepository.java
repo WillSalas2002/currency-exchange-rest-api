@@ -66,7 +66,7 @@ public class CurrencyRepository {
             statement.executeUpdate();
             ResultSet keys = statement.getGeneratedKeys();
             if (keys.next()) {
-                currency.setId(keys.getInt("id"));
+                currency.setId(keys.getInt(1));
             }
             return currency;
         } catch (SQLException e) {
