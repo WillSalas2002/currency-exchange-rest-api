@@ -3,7 +3,6 @@ package com.will.currency.exchange.api.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.will.currency.exchange.api.dto.CurrencyDto;
 import com.will.currency.exchange.api.service.CurrencyService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
