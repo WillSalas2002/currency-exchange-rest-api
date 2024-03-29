@@ -1,6 +1,6 @@
 package com.will.currency.exchange.api.service;
 
-import com.will.currency.exchange.api.dto.ExchangeRateDto;
+import com.will.currency.exchange.api.dto.ExchangeDto;
 import com.will.currency.exchange.api.model.ExchangeRate;
 import com.will.currency.exchange.api.repository.ExchangeRateRepository;
 import lombok.AccessLevel;
@@ -13,9 +13,9 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExchangeService {
     private static final ExchangeService INSTANCE = new ExchangeService();
-    private final ExchangeRateRepository exchangeRateRepository = ExchangeRateRepository.getINSTANCE();
+    private final ExchangeRateRepository exchangeRateRepository = ExchangeRateRepository.getInstance();
 
-    public ExchangeRateDto calculateExchange(String baseCurrency, String targetCurrency, BigDecimal amount) {
+    public ExchangeDto calculateExchange(String baseCurrency, String targetCurrency, BigDecimal amount) {
 
         Optional<ExchangeRate> tryDirectExchangeRate = findByCurrencyCodes(baseCurrency, targetCurrency);
         if (tryDirectExchangeRate.isPresent()) {
@@ -34,7 +34,7 @@ public class ExchangeService {
         return exchangeRateRepository.findByCurrencyCodes(baseCurrency, targetCurrency);
     }
 
-    private ExchangeRateDto calculateUsdBasedExchange(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) {
+    private ExchangeDto calculateUsdBasedExchange(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) {
         String usdCode = "USD";
 
         Optional<ExchangeRate> currencyOptional1 = findByCurrencyCodes(usdCode, baseCurrencyCode);
@@ -57,8 +57,8 @@ public class ExchangeService {
         return calculateDirectExchange(exchangeRate, amount);
     }
 
-    private ExchangeRateDto calculateDirectExchange(ExchangeRate exchangeRate, BigDecimal amount) {
-        return new ExchangeRateDto(
+    private ExchangeDto calculateDirectExchange(ExchangeRate exchangeRate, BigDecimal amount) {
+        return new ExchangeDto(
                 exchangeRate.getBaseCurrency(),
                 exchangeRate.getTargetCurrency(),
                 exchangeRate.getRate(),
@@ -67,7 +67,7 @@ public class ExchangeService {
         );
     }
 
-    private ExchangeRateDto calculateReverseExchange(ExchangeRate exchangeRate, BigDecimal amount) {
+    private ExchangeDto calculateReverseExchange(ExchangeRate exchangeRate, BigDecimal amount) {
         ExchangeRate revertedExchangeRate = revertExchangeRate(exchangeRate);
         return calculateDirectExchange(revertedExchangeRate, amount);
     }
