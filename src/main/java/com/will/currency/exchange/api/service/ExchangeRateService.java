@@ -6,7 +6,9 @@ import com.will.currency.exchange.api.repository.ExchangeRateRepository;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExchangeRateService {
@@ -16,11 +18,18 @@ public class ExchangeRateService {
     public Optional<ExchangeRateDto> findByCurrencyCodes(String baseCurrencyCode, String targetCurrencyCode) {
         return exchangeRateRepository.findByCurrencyCodes(baseCurrencyCode, targetCurrencyCode)
                 .stream()
-                .map(this::mapToCurrencyDto)
+                .map(this::mapToExchangeRateDto)
                 .findFirst();
     }
 
-    private ExchangeRateDto mapToCurrencyDto(ExchangeRate exchangeRate) {
+    public List<ExchangeRateDto> findAll() {
+        return exchangeRateRepository.findAll()
+                .stream()
+                .map(this::mapToExchangeRateDto)
+                .collect(Collectors.toList());
+    }
+
+    private ExchangeRateDto mapToExchangeRateDto(ExchangeRate exchangeRate) {
         return new ExchangeRateDto(exchangeRate.getId(), exchangeRate.getBaseCurrency(), exchangeRate.getTargetCurrency(), exchangeRate.getRate());
     }
 
