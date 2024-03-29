@@ -5,15 +5,14 @@ import com.will.currency.exchange.api.repository.CurrencyRepository;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CurrencyService {
     private static final CurrencyService INSTANCE = new CurrencyService();
     private final CurrencyRepository currencyRepository = CurrencyRepository.getINSTANCE();
 
-    public List<CurrencyDto> findByCurrencyCode(String code) {
+    public Optional<CurrencyDto> findByCurrencyCode(String code) {
         return currencyRepository.findByCurrencyCode(code)
                 .stream()
                 .map(currency -> new CurrencyDto(
@@ -21,7 +20,7 @@ public class CurrencyService {
                         currency.getCode(),
                         currency.getFullName(),
                         currency.getSign()))
-                .collect(Collectors.toList());
+                .findFirst();
     }
 
     public static CurrencyService getInstance() {
