@@ -29,8 +29,17 @@ public class ExchangeRateService {
                 .collect(Collectors.toList());
     }
 
+    public ExchangeRate save(ExchangeRateDto exchangeRateDto) {
+        ExchangeRate exchangeRate = mapToExchangeRate(exchangeRateDto);
+        return exchangeRateRepository.save(exchangeRate);
+    }
+
     private ExchangeRateDto mapToExchangeRateDto(ExchangeRate exchangeRate) {
         return new ExchangeRateDto(exchangeRate.getId(), exchangeRate.getBaseCurrency(), exchangeRate.getTargetCurrency(), exchangeRate.getRate());
+    }
+
+    private ExchangeRate mapToExchangeRate(ExchangeRateDto exchangeRateDto) {
+        return new ExchangeRate(exchangeRateDto.id(), exchangeRateDto.baseCurrency(), exchangeRateDto.targetCurrency(), exchangeRateDto.rate());
     }
 
     public static ExchangeRateService getInstance() {
