@@ -3,7 +3,6 @@ package com.will.currency.exchange.api.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.will.currency.exchange.api.dto.CurrencyDto;
 import com.will.currency.exchange.api.dto.ExchangeRateDto;
-import com.will.currency.exchange.api.model.Currency;
 import com.will.currency.exchange.api.model.ExchangeRate;
 import com.will.currency.exchange.api.service.CurrencyService;
 import com.will.currency.exchange.api.service.ExchangeRateService;

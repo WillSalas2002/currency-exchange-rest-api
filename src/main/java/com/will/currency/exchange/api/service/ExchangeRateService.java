@@ -46,10 +46,10 @@ public class ExchangeRateService {
 
     private ExchangeRate mapToExchangeRate(ExchangeRateDto exchangeRateDto) {
         return new ExchangeRate(
-                exchangeRateDto.id(),
-                CurrencyMapper.mapToCurrency(exchangeRateDto.baseCurrency()),
-                CurrencyMapper.mapToCurrency(exchangeRateDto.targetCurrency()),
-                exchangeRateDto.rate()
+                exchangeRateDto.getId(),
+                CurrencyMapper.mapToCurrency(exchangeRateDto.getBaseCurrency()),
+                CurrencyMapper.mapToCurrency(exchangeRateDto.getTargetCurrency()),
+                exchangeRateDto.getRate()
         );
     }
 
