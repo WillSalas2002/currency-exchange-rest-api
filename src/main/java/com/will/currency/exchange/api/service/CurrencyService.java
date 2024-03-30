@@ -1,6 +1,7 @@
 package com.will.currency.exchange.api.service;
 
 import com.will.currency.exchange.api.dto.CurrencyDto;
+import com.will.currency.exchange.api.mapper.CurrencyMapper;
 import com.will.currency.exchange.api.model.Currency;
 import com.will.currency.exchange.api.repository.CurrencyRepository;
 import lombok.AccessLevel;
@@ -18,32 +19,20 @@ public class CurrencyService {
     public Optional<CurrencyDto> findByCurrencyCode(String code) {
         return currencyRepository.findByCurrencyCode(code)
                 .stream()
-                .map(currency -> new CurrencyDto(
-                        currency.getId(),
-                        currency.getCode(),
-                        currency.getFullName(),
-                        currency.getSign()))
+                .map(CurrencyMapper::mapToCurrencyDto)
                 .findFirst();
     }
 
     public List<CurrencyDto> findAll() {
         return currencyRepository.findAll()
                 .stream()
-                .map(this::mapToCurrencyDto)
+                .map(CurrencyMapper::mapToCurrencyDto)
                 .collect(Collectors.toList());
     }
 
     public CurrencyDto save(CurrencyDto currencyDto) {
-        Currency currency = currencyRepository.save(mapToCurrency(currencyDto));
-        return mapToCurrencyDto(currency);
-    }
-
-    private CurrencyDto mapToCurrencyDto(Currency currency) {
-        return new CurrencyDto(currency.getId(), currency.getCode(), currency.getFullName(), currency.getSign());
-    }
-
-    private Currency mapToCurrency(CurrencyDto currencyDto) {
-        return new Currency(currencyDto.id(), currencyDto.code(), currencyDto.fullName(), currencyDto.sign());
+        Currency currency = currencyRepository.save(CurrencyMapper.mapToCurrency(currencyDto));
+        return CurrencyMapper.mapToCurrencyDto(currency);
     }
 
     public static CurrencyService getInstance() {

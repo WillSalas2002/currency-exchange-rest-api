@@ -18,7 +18,7 @@ public class CurrencyServlet extends HttpServlet {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String currencyCode = req.getPathInfo().substring(1).toUpperCase();
         // TODO: Validation of the currency code and exception handling!!!
         Optional<CurrencyDto> resultOptional = currencyService.findByCurrencyCode(currencyCode);
