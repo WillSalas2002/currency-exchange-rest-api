@@ -35,6 +35,12 @@ public class ExchangeRateService {
         return exchangeRateRepository.save(exchangeRate);
     }
 
+    public ExchangeRateDto update(ExchangeRateDto updatedExchangeRateDto) {
+        ExchangeRate exchangeRate = mapToExchangeRate(updatedExchangeRateDto);
+        ExchangeRate update = exchangeRateRepository.update(exchangeRate);
+        return mapToExchangeRateDto(update);
+    }
+
     private ExchangeRateDto mapToExchangeRateDto(ExchangeRate exchangeRate) {
         return new ExchangeRateDto(
                 exchangeRate.getId(),
