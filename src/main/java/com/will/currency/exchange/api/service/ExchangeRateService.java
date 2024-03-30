@@ -1,6 +1,7 @@
 package com.will.currency.exchange.api.service;
 
 import com.will.currency.exchange.api.dto.ExchangeRateDto;
+import com.will.currency.exchange.api.mapper.CurrencyMapper;
 import com.will.currency.exchange.api.model.ExchangeRate;
 import com.will.currency.exchange.api.repository.ExchangeRateRepository;
 import lombok.AccessLevel;
@@ -35,11 +36,21 @@ public class ExchangeRateService {
     }
 
     private ExchangeRateDto mapToExchangeRateDto(ExchangeRate exchangeRate) {
-        return new ExchangeRateDto(exchangeRate.getId(), exchangeRate.getBaseCurrency(), exchangeRate.getTargetCurrency(), exchangeRate.getRate());
+        return new ExchangeRateDto(
+                exchangeRate.getId(),
+                CurrencyMapper.mapToCurrencyDto(exchangeRate.getBaseCurrency()),
+                CurrencyMapper.mapToCurrencyDto(exchangeRate.getTargetCurrency()),
+                exchangeRate.getRate()
+        );
     }
 
     private ExchangeRate mapToExchangeRate(ExchangeRateDto exchangeRateDto) {
-        return new ExchangeRate(exchangeRateDto.id(), exchangeRateDto.baseCurrency(), exchangeRateDto.targetCurrency(), exchangeRateDto.rate());
+        return new ExchangeRate(
+                exchangeRateDto.id(),
+                CurrencyMapper.mapToCurrency(exchangeRateDto.baseCurrency()),
+                CurrencyMapper.mapToCurrency(exchangeRateDto.targetCurrency()),
+                exchangeRateDto.rate()
+        );
     }
 
     public static ExchangeRateService getInstance() {
