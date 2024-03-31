@@ -22,7 +22,7 @@ public class CurrencyServlet extends HttpServlet {
         String currencyCode = req.getPathInfo();
         if (currencyCode == null || currencyCode.length() != 4) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Currency is absent in the url path"));
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Currency is absent in the url path or it is invalid"));
             return;
         }
         currencyCode = currencyCode.substring(1).toUpperCase();

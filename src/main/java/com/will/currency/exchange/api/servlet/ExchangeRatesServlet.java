@@ -52,7 +52,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             return;
         }
         BigDecimal rate;
-        if (rateStr != null && rateStr.replace(",", ".").matches("^[-+]?\\d*\\.?\\d+$")) {
+        if (rateStr != null && rateStr.matches("^[-+]?\\d*\\.?\\d+$")) {
             rate = new BigDecimal(rateStr);
         } else {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);

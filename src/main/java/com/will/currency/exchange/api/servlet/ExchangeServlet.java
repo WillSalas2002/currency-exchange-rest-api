@@ -41,6 +41,8 @@ public class ExchangeServlet extends HttpServlet {
             objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Invalid amount entered"));
             return;
         }
+        from = from.toUpperCase();
+        to = to.toUpperCase();
         try {
             ExchangeDto exchangeDto = exchangeService.calculateExchange(from, to, amount);
             resp.setStatus(HttpServletResponse.SC_OK);
