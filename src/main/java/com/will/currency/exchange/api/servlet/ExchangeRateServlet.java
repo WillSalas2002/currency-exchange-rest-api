@@ -1,6 +1,7 @@
 package com.will.currency.exchange.api.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.will.currency.exchange.api.dto.ErrorResponse;
 import com.will.currency.exchange.api.dto.ExchangeRateDto;
 import com.will.currency.exchange.api.service.ExchangeRateService;
 import jakarta.servlet.ServletException;
@@ -29,26 +30,41 @@ public class ExchangeRateServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String currencyCodes = req.getPathInfo().substring(1).toUpperCase();
-        String baseCurrencyCode = currencyCodes.substring(0, 3);
-        String targetCurrencyCode = currencyCodes.substring(3, 6);
-        //TODO: need to validate the fields and handle exceptions!!!
-        Optional<ExchangeRateDto> resultOptional = exchangeRateService.findByCurrencyCodes(baseCurrencyCode, targetCurrencyCode);
-        if (resultOptional.isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            objectMapper.writeValue(resp.getWriter(), "Not Found");
+        String currencyCodes = req.getPathInfo();
+        if (currencyCodes == null || currencyCodes.length() != 7) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Invalid currency codes specified."));
             return;
         }
-        resp.setStatus(HttpServletResponse.SC_OK);
-        objectMapper.writeValue(resp.getWriter(), resultOptional.get());
+        currencyCodes = currencyCodes.substring(1).toUpperCase();
+        String baseCurrencyCode = currencyCodes.substring(0, 3);
+        String targetCurrencyCode = currencyCodes.substring(3);
+        try {
+            Optional<ExchangeRateDto> resultOptional = exchangeRateService.findByCurrencyCodes(baseCurrencyCode, targetCurrencyCode);
+            if (resultOptional.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Exchange rate not found"));
+                return;
+            }
+            resp.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(resp.getWriter(), resultOptional.get());
+        } catch (RuntimeException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Internal server error"));
+        }
     }
 
     private void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String currencyCodes = req.getPathInfo().substring(1).toUpperCase();
+        String currencyCodes = req.getPathInfo();
+        if (currencyCodes == null || currencyCodes.length() != 7) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Invalid currency codes specified"));
+            return;
+        }
+        currencyCodes = currencyCodes.substring(1).toUpperCase();
         String baseCurrencyCode = currencyCodes.substring(0, 3);
-        String targetCurrencyCode = currencyCodes.substring(3, 6);
+        String targetCurrencyCode = currencyCodes.substring(3);
         String rateStr = null;
-
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = req.getReader()) {
             String line;
@@ -65,21 +81,29 @@ public class ExchangeRateServlet extends HttpServlet {
                 break;
             }
         }
-        //TODO: need to validate the fields and handle exceptions!!!
-        BigDecimal rate = null;
-        if (rateStr != null && rateStr.matches("^[-+]?\\d*\\.?\\d+$"))
+        BigDecimal rate;
+        if (rateStr != null && rateStr.replace(",", ".").matches("^[-+]?\\d*\\.?\\d+$")) {
             rate = new BigDecimal(rateStr);
-
-        Optional<ExchangeRateDto> exchangeRateDtoOptional = exchangeRateService.findByCurrencyCodes(baseCurrencyCode, targetCurrencyCode);
-        if (exchangeRateDtoOptional.isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            objectMapper.writeValue(resp.getWriter(), "Not Found");
+        } else {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Invalid rate specified"));
             return;
         }
-        ExchangeRateDto exchangeRateDto = exchangeRateDtoOptional.get();
-        exchangeRateDto.setRate(rate);
-        ExchangeRateDto updatedDto = exchangeRateService.update(exchangeRateDto);
-        resp.setStatus(HttpServletResponse.SC_OK);
-        objectMapper.writeValue(resp.getWriter(), updatedDto);
+        try {
+            Optional<ExchangeRateDto> exchangeRateDtoOptional = exchangeRateService.findByCurrencyCodes(baseCurrencyCode, targetCurrencyCode);
+            if (exchangeRateDtoOptional.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Exchange rate not found"));
+                return;
+            }
+            ExchangeRateDto exchangeRateDto = exchangeRateDtoOptional.get();
+            exchangeRateDto.setRate(rate);
+            ExchangeRateDto updatedDto = exchangeRateService.update(exchangeRateDto);
+            resp.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(resp.getWriter(), updatedDto);
+        } catch (RuntimeException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Internal server error"));
+        }
     }
 }

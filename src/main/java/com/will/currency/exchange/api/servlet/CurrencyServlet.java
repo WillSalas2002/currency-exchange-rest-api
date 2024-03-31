@@ -2,8 +2,8 @@ package com.will.currency.exchange.api.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.will.currency.exchange.api.dto.CurrencyDto;
+import com.will.currency.exchange.api.dto.ErrorResponse;
 import com.will.currency.exchange.api.service.CurrencyService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,20 +19,25 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String currencyCode = req.getPathInfo().substring(1).toUpperCase();
-        // TODO: Validation of the currency code and exception handling!!!
-        Optional<CurrencyDto> resultOptional = currencyService.findByCurrencyCode(currencyCode);
-        if (resultOptional.isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            objectMapper.writeValue(resp.getWriter(), "Not found");
+        String currencyCode = req.getPathInfo();
+        if (currencyCode == null || currencyCode.length() != 4) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Currency is absent in the url path"));
             return;
         }
-        resp.setStatus(HttpServletResponse.SC_OK);
-        objectMapper.writeValue(resp.getWriter(), resultOptional.get());
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
+        currencyCode = currencyCode.substring(1).toUpperCase();
+        try {
+            Optional<CurrencyDto> resultOptional = currencyService.findByCurrencyCode(currencyCode);
+            if (resultOptional.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Currency not found"));
+                return;
+            }
+            resp.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(resp.getWriter(), resultOptional.get());
+        } catch (RuntimeException e) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponse("Internal server error"));
+        }
     }
 }

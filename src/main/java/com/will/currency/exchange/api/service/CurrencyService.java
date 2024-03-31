@@ -1,6 +1,7 @@
 package com.will.currency.exchange.api.service;
 
 import com.will.currency.exchange.api.dto.CurrencyDto;
+import com.will.currency.exchange.api.exception.CustomException;
 import com.will.currency.exchange.api.mapper.CurrencyMapper;
 import com.will.currency.exchange.api.model.Currency;
 import com.will.currency.exchange.api.repository.CurrencyRepository;
@@ -30,7 +31,7 @@ public class CurrencyService {
                 .collect(Collectors.toList());
     }
 
-    public CurrencyDto save(CurrencyDto currencyDto) {
+    public CurrencyDto save(CurrencyDto currencyDto) throws CustomException {
         Currency currency = currencyRepository.save(CurrencyMapper.mapToCurrency(currencyDto));
         return CurrencyMapper.mapToCurrencyDto(currency);
     }

@@ -1,5 +1,6 @@
 package com.will.currency.exchange.api.repository;
 
+import com.will.currency.exchange.api.exception.CustomException;
 import com.will.currency.exchange.api.model.Currency;
 import com.will.currency.exchange.api.model.ExchangeRate;
 import com.will.currency.exchange.api.util.ConnectionManager;
@@ -75,7 +76,7 @@ public class ExchangeRateRepository {
         }
     }
 
-    public ExchangeRate save(ExchangeRate exchangeRate) {
+    public ExchangeRate save(ExchangeRate exchangeRate) throws CustomException {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, exchangeRate.getBaseCurrency().getId());
@@ -88,6 +89,9 @@ public class ExchangeRateRepository {
             }
             return exchangeRate;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 19) {
+                throw new CustomException("Exchange rate already exists", e);
+            }
             throw new RuntimeException(e);
         }
     }

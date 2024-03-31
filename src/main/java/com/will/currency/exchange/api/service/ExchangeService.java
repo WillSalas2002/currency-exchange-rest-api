@@ -1,6 +1,7 @@
 package com.will.currency.exchange.api.service;
 
 import com.will.currency.exchange.api.dto.ExchangeDto;
+import com.will.currency.exchange.api.exception.CustomException;
 import com.will.currency.exchange.api.model.ExchangeRate;
 import com.will.currency.exchange.api.repository.ExchangeRateRepository;
 import lombok.AccessLevel;
@@ -15,7 +16,7 @@ public class ExchangeService {
     private static final ExchangeService INSTANCE = new ExchangeService();
     private final ExchangeRateRepository exchangeRateRepository = ExchangeRateRepository.getInstance();
 
-    public ExchangeDto calculateExchange(String baseCurrency, String targetCurrency, BigDecimal amount) {
+    public ExchangeDto calculateExchange(String baseCurrency, String targetCurrency, BigDecimal amount) throws CustomException {
 
         Optional<ExchangeRate> tryDirectExchangeRate = findByCurrencyCodes(baseCurrency, targetCurrency);
         if (tryDirectExchangeRate.isPresent()) {
@@ -34,16 +35,16 @@ public class ExchangeService {
         return exchangeRateRepository.findByCurrencyCodes(baseCurrency, targetCurrency);
     }
 
-    private ExchangeDto calculateUsdBasedExchange(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) {
+    private ExchangeDto calculateUsdBasedExchange(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) throws CustomException {
         String usdCode = "USD";
 
         Optional<ExchangeRate> currencyOptional1 = findByCurrencyCodes(usdCode, baseCurrencyCode);
         if (currencyOptional1.isEmpty())
-            throw new RuntimeException("NOT FOUND EXCHANGE RATE");
+            throw new CustomException("Exchange rate not found", null);
 
         Optional<ExchangeRate> currencyOptional2 = findByCurrencyCodes(usdCode, targetCurrencyCode);
         if (currencyOptional2.isEmpty())
-            throw new RuntimeException("NOT FOUND EXCHANGE RATE");
+            throw new CustomException("Exchange rate not found", null);
 
         BigDecimal usdToBase = currencyOptional1.get().getRate();
         BigDecimal usdToTarget = currencyOptional2.get().getRate();

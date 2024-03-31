@@ -1,5 +1,6 @@
 package com.will.currency.exchange.api.repository;
 
+import com.will.currency.exchange.api.exception.CustomException;
 import com.will.currency.exchange.api.model.Currency;
 import com.will.currency.exchange.api.util.ConnectionManager;
 import lombok.AccessLevel;
@@ -57,7 +58,7 @@ public class CurrencyRepository {
         }
     }
 
-    public Currency save(Currency currency) {
+    public Currency save(Currency currency) throws CustomException {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, currency.getCode());
@@ -70,6 +71,9 @@ public class CurrencyRepository {
             }
             return currency;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 19) {
+                throw new CustomException("Specified currency already exists", e);
+            }
             throw new RuntimeException(e);
         }
     }
